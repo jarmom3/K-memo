@@ -1,0 +1,103 @@
+/*
+// menu.css
+//
+// Menu specific style definitions
+//
+// K-memo, 2015-10-22
+// Jarmo Mäkelä
+*/
+
+/* mainMenu developed from the example provided by:
+www.webchief.co.uk/blog/simple-jquery-dropdown-menu/index.php */
+
+
+/***************************/
+/* Main view dropdown menu */
+/***************************/
+
+.mainMenu {
+	margin:0;
+	padding:0;
+}
+
+.mainMenu li {
+	list-style:none;
+	float:left;
+	font:12px Arial, Helvetica, sans-serif #111;
+}
+
+.mainMenu li a:link, .mainMenu li a:visited, .mainMenu li span {
+	display:block;
+	text-decoration:none;
+	background-color: #1B619B;
+	padding: 0.5em 1em;
+	margin: 0px;
+	border-right: 3px solid #FFFFFF;
+	color:#f7f7f7;
+}
+
+.mainMenu li a:hover, .mainMenu li span:hover {
+	background-color:#144174;	
+}
+
+#menuLi1 {
+    font-size: 20px;
+}
+
+/* Style the sub menu */
+.mainMenu li ul {
+	position:absolute;
+	visibility:hidden;
+	border-top:2px solid #fff;
+	margin:0;
+	padding:0;
+}
+
+.mainMenu li ul li {
+	display:inline;
+	float:none;
+}
+
+.mainMenu li ul li a:link, .mainMenu li ul li a:visited {
+	background-color:#1B619B;
+	width:auto;
+}
+
+.mainMenu li ul li a:hover {
+	background-color:#144174;	
+}
+
+
+/*****************/
+/* Context menu  */
+/*****************/
+
+#floorPlanContextMenu {
+    display: none;
+    width: 230px;
+    color: #1B619B;
+    background: #F8F2E5;
+    border: 2px solid #D75A20;
+    border-radius: 5px;
+	-webkit-border-radius: 5px;
+}
+
+.contextMenuTitle {
+    font-weight: bold;
+    padding-left: 10px;
+}
+
+.contextMenuItemContainer {
+    margin-top: 0px;
+    margin-bottom: 5px;
+}
+
+.contextMenuItemContainer:hover {
+    color: #F8F2E5;
+    background: #1B619B;
+}
+
+.contextMenuItem {
+    padding-left: 10px;
+    vertical-align: middle;
+}
