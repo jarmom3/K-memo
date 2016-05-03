@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>K-memo</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width
+         initial-scale=1 maximum-scale=1 user-scalable=no"/>
+    
+    <!-- To remove a tap highlight in IE10 and IE11 on Windows Phone -->
+    <meta name="msapplication-tap-highlight" content="no" />
+    
+    <link rel="stylesheet" href="libs/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/k-memo.css">
+
+    <script src="libs/jquery-2.1.4.js"></script>
+    <script src="libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="libs/hammer.min.js"></script>
+	
+	<script src="js/menu.js"></script>
+	<script src="js/ui-state.js"></script>
+	<script src="js/poi.js"></script>
+	<script src="js/image.js"></script>
+	<script src="js/main.js"></script>
+	<script src="js/doc-storage.js"></script>
+	<script src="js/poi-storage.js"></script>
+	<script src="js/admin.js"></script>
+
+	<script src="js/touch.js"></script>
+	
+</head>
+
+<body onload="mainInit();">
+<div class="container-fluid">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand">K-memo &nbsp;</a>
+            </div>
+            <div>
+                <!--<ul class="nav navbar-nav" style="color: #AAAAAA;">
+                    <li id="currentProject"></li>
+                    <br>
+                    <li id="currentDocument" style="cursor: pointer;" onclick="selectDocument();"></li>
+                </ul>-->
+                <ul class="nav navbar-nav navbar-left">
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <span id="currentProject"></span>
+                            <span class="caret"></span>
+                        </a>
+                        
+                        <ul id="navbarProjList" class="dropdown-menu">
+                            <!-- Contents created in function initProjectMenu() --> 
+                        </ul>
+                        
+                     </li>
+                    <li class="dropdown"> 
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                            <span id="currentDocument"></span>
+                            <span class="caret"></span>
+                        </a>
+                        
+                        <ul id="navbarDocList" class="dropdown-menu">
+                            <!-- Contents created in function initDocumentMenu() -->
+                        </ul>
+                    </li>
+                </ul>
+                
+                <ul class="nav navbar-nav navbar-right">
+
+                    <!-- 'Admin' dropdown menu -->
+                    <li class="dropdown">
+                        <a class="dropdown-toggle"
+                            data-toggle="dropdown" href="#">
+                            <span class="glyphicon glyphicon-user"></span>
+                            <span class="hidden-xs hidden-sm"> Pääkäyttäjä </span>
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" onclick="manageProjects();">Projektien hallinta</a></li>
+                            <li><a href="#" onclick="manageUsers();">Käyttäjien hallinta</a></li> 
+                        </ul>
+                    </li>
+                
+                    <!-- 'Tools' dropdown menu -->
+                    <li class="dropdown">
+                        <a class="dropdown-toggle"
+                            data-toggle="dropdown" href="#">
+                            <span class="glyphicon glyphicon-menu-hamburger"></span>
+                            <span class="hidden-xs hidden-sm"> Työkalut </span>
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" onclick="selectProject();">Valitse projekti</a></li>
+                            <li><a href="#" onclick="taskList();">Tehtävälista</a></li>
+                            <li><a href="#" onclick="uploadData();">Tietojen lähetys</a></li>  
+                            <li><a href="#" onclick="settings();">Asetukset</a></li> 
+                        </ul>
+                    </li>
+                    
+                    <!-- Zoom buttons area -->
+                    <li><a href="#" onclick="onZoomIn()">
+                            <span class="glyphicon glyphicon-zoom-in"></span>
+                            <span class="hidden-xs hidden-sm"> Suurenna </span>
+                        </a>
+                    </li>
+                    <li><a href="#"onclick="onZoomReset()">
+                            <span class="glyphicon glyphicon-resize-full"></span>
+                            <span class="hidden-xs hidden-sm"> 1:1 </span>
+                        </a>
+                    </li>
+                    <li><a href="#" onclick="onZoomOut()">
+                            <span class="glyphicon glyphicon-zoom-out"></span>
+                            <span class="hidden-xs hidden-sm"> Pienennä </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="mainView" class="container col-md-12">
+        <!-- Image area is created dynamically -->
+    </div>
+</div>
+
+
+<!-- Context menu -->
+<div id="contextMenu" class="dropdown clearfix">
+
+    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu"
+        style="display:block;position:static;">
+        
+        <li><a data-toggle="modal" data-target="#obsPoiForm" tabindex="-1"
+            href="#" onclick="$('#obsPoiPhoto').hide();">Havainto</a>
+        </li>
+        
+        <li onclick="hideClickIndicator(); alert('Pic POI ei vielä toteutettu');">
+            <a tabindex="-1" href="#">Valokuva</a>
+        </li>
+        
+        <li><a data-toggle="modal" data-target="#notePoiList" tabindex="-1"
+            href="#">Merkintä</a>
+        </li>
+        
+        <li class="divider">
+        </li>
+        
+        <li onclick="hideClickIndicator();">
+            <a tabindex="-1" href="#">Peruuta</a>
+        </li>
+        
+    </ul>
+    
+</div>
+
+
+<!-- Observation poi fill-in dialog -->
+<div class="modal fade" id="obsPoiForm" role="dialog" tabindex="-1">
+    <div class="modal-dialog">
+    
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                    onclick="clearObsPoiForm();">&times;</button>
+                <h4 id="obsPoiTitle" class="modal-title">Uusi havainto</h4>
+            </div>
+            
+            <div class="modal-body">
+                <form class="form-horizontal" role="form">
+                
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Kuvaus:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="obsPoiText">
+                        </div>
+                    </div>
+ 
+                    <div class="form-group">
+                        <!--<label class="col-sm-2 control-label">Luokka:</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control" size="5" id="obsPoiSubstance">
+                        </div>
+                        <div class="col-sm-2">
+                            <a href="#" data-target="#substanceList" data-toggle="modal"
+                                class="btn btn-info btn-sm">?</a>
+                        </div>-->
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Luokka:</label>
+                            <div class="col-sm-3">
+                                <select class="form-control" id="obsPoiSubstance">
+                                    <option></option>
+                                    <option>Eriste</option>
+                                    <option>Ilmatila</option>
+                                    <option>Pinnoite</option>
+                                    <option>Rakenne</option>
+                                    <option>Tarvike</option>
+                                    <option>Tiiviste</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Add some space between the fields -->
+                            <div class="col-sm-1"></div>
+                        
+                            <label class="col-sm-2 control-label">Näyte nro:</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control" size="3" id="obsPoiNumber">
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div class="form-group">
+                        <!--<label class="col-sm-2 control-label">Näyte nro:</label>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" size="2" id="obsPoiNumber">
+                        </div>-->
+                        
+                        <label class="col-sm-2 control-label">Tutkimus:</label>
+                        <div class="col-sm-8"">
+                             <input type="text" class="form-control" id="obsPoiAnalysis">
+                        </div>
+                        
+                        <div class="col-sm-1">
+                            <a href="#" data-target="#analysisList" data-toggle="modal"
+                                class="btn btn-info btn-sm">?</a>
+                        </div>
+                    </div>
+                                        
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Näytetiedot:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="obsPoiSampleInfo">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Valokuva:</label>
+                        <div class="col-sm-offset-2">
+                            <!--<a href="#" class="btn btn-info btn-sm marginLeft15"
+                                   onclick="obsPoiAddPhoto();">
+                                <span class="glyphicon glyphicon-camera"></span> Ota kuva
+                            </a>-->
+                            <input type="file" id="obsPoiCapture" accept="image/*" capture>
+                            <div id="obsPoiPhoto" class="col-sm-3">
+                                <div class="thumbnail">
+                                    <img src="img/asbesti.jpg" onclick="$('#photoView').modal('show');">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="obsPoiSave" type="button" class="btn btn-success"
+                   data-dismiss="modal" onclick="createObsPoi();"> Tallenna</button>
+            </div>
+        </div> <!-- End of Modal content -->
+    </div>
+</div>    <!-- End of Modal dialog -->
+
+
+<!-- List of substance class alternatives for the user to select -->
+<div id="substanceList" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+        
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                    aria-hidden="true">&times;</button>
+                <h4>Aineen tai materiaalin luokka</h4>
+            </div>
+        
+            <div class="modal-body">             
+                <p onclick="addSubstance('Eriste');">Eriste</p>
+                <p onclick="addSubstance('Ilmatila');">Ilmatila</p>
+                <p onclick="addSubstance('Pinnoite');">Pinnoite</p>
+                <p onclick="addSubstance('Rakenne');">Rakenne</p>
+                <p onclick="addSubstance('Tarvike');">Tarvike</p>
+                <p onclick="addSubstance('Tiiviste');">Tiiviste</p>  
+            </div>
+            
+        </div>    <!-- end of modal-content -->    
+    </div>
+</div>
+
+
+<!-- List of analysis alternatives for the user to select -->
+<div id="analysisList" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+       
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                    aria-hidden="true">&times;</button>
+                <h4>Valitse tutkimus ja näytteen tyyppi</h4>
+            </div>
+            
+            <div class="modal-body">
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <ul class="list-group col-sm-offset-1 col-sm-5">
+                            <li id="obsPoiHazard1" class="list-group-item hazardClass" 
+                                onclick="obsPoiHazard('1');">Asbesti</li>
+                            <li id="obsPoiHazard2" class="list-group-item hazardClass" 
+                                onclick="obsPoiHazard('2');">PAH (Polyaromaattiset hiilivedyt)</li>
+                            <li id="obsPoiHazard3" class="list-group-item hazardClass" 
+                                onclick="obsPoiHazard('3');">PCB</li>
+                            <li id="obsPoiHazard4" class="list-group-item hazardClass" 
+                                onclick="obsPoiHazard('4');">Raskasmetalli</li>
+                        </ul>
+                
+                        <!-- Add some space between the fields -->
+                        <div class="col-sm-1"></div>
+                
+                        <ul class="list-group col-sm-4">
+                            <li id="obsPoiSampleType1" class="list-group-item sampleType" 
+                                onclick="obsPoiSampleType('1');">Ilmanäyte</li>
+                            <li id="obsPoiSampleType2" class="list-group-item sampleType" 
+                                onclick="obsPoiSampleType('2');">Materiaalinäyte</li>
+                            <li id="obsPoiSampleType3" class="list-group-item sampleType" 
+                                onclick="obsPoiSampleType('3');">Pintapölynäyte</li>
+                        </ul>
+                    </div>                    
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="obsAnalysisSave" type="button" class="btn btn-success"
+                   data-dismiss="modal" onclick="obsPoiAddAnalysis();">OK</button>
+            </div>
+        
+            <!-- VANHA VERSIO <div class="modal-body">
+                <p onclick="addAnalysis('ASB');">ASB (Asbesti)…</p>
+                <p onclick="addAnalysis('PB');">PB (Lyijy)</p>
+                <p onclick="addAnalysis('RM');">RM (Raskasmetalli)</p>
+                <p onclick="addAnalysis('KLO');">KLO (Kloridi)</p>
+                <p onclick="addAnalysis('PEM');">PEM (Pölynkoostumus)</p>
+            </div>-->
+            
+        </div>    <!-- end of modal-content -->    
+    </div>
+</div>
+
+
+<!-- Note poi text selection -->
+<div class="modal fade" id="notePoiList" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content"> 
+          
+            <div class="modal-header">
+                <button type="button" onclick="hideClickIndicator();" class="close"
+                    data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4>Valitse merkintä</h4>
+            </div>
+            
+            <div class="modal-body">
+                <p onclick="createNotePoi('IV');">IV (IV-kanava)</p>
+                <p onclick="createNotePoi('LE');">LE (Levy)</p>
+                <p onclick="createNotePoi('PE');">PE (Putkieriste)</p>
+                <p onclick="createNotePoi('PL');">PL (Pikiliima)</p>
+                <p onclick="createNotePoi('PO');">PO (Palo-ovi)</p>
+            </div> 
+              
+        </div>   <!-- End of modal-content -->
+    </div>
+</div>   <!-- End of notePoiList -->
+
+
+<!-- Photo in large view -->
+<div class="modal fade" id="photoView" role="dialog" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content"> 
+          
+            <div class="modal-header">
+                <button type="button" onclick="hideClickIndicator();" class="close"
+                    data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <img src="img/asbesti.jpg" class="img-responsive">
+            </div> 
+              
+        </div>   <!-- End of modal-content -->
+    </div>
+</div>   <!-- End of notePoiList -->
+
+
+</body>
+</html>

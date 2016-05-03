@@ -1,191 +1,169 @@
 //
 // menu.js
 //
-// Main view dropdown menu and context menu functions
+// Menu handling functions
 //
-// K-memo, 2015-10-22
-// Jarmo Mäkelä
+// Jarmo Mäkelä 2015-11-20
+// demo v3
 //
 
 
-function initMenuData() {
-    docInfo.clearProjectInfo();
-    docInfo.clearDocumentInfo();
+function initProjectMenu() {
+
+    var projCount;
+    var ulElem;
+    var liElem;
+    var aElem;
+    var prefix;
+    var postfix;
+    var onClickStr;
     
-    /* Add some hard-coded content for demo purposes */
-    docInfo.addProject("Asunto Oy Demokiinteistö");
-    docInfo.addProject("Demo Oy, tehdasrakennus");
-    docInfo.addProject("Firma Oy, pääkonttori");
-    docInfo.addDocument("Kellari", "img/demo-kellari.png", true);
-    docInfo.addDocument("Kerros-1", "img/demo-kerros1.png", true);
-    docInfo.addDocument("Ullakko", "img/demo-ullakko.png", true);
-    docInfo.addDocument("Asuntotaulukko", "img/taulukko.png", false);
-    docInfo.addDocument("Isännöitsijäntodistus", "img/todistus.png", false);
+    projCount = docDb.getNbrOfProjects();
+    ulElem = document.getElementById("navbarProjList");
+    
+    /* Create items (<li> element with <a> element inside) */
+    for (i = 0; i < projCount; i++) {
+        liElem = document.createElement("li");
+        ulElem.appendChild(liElem);
+        
+        aElem = document.createElement("a");
+        aElem.innerHTML = docDb.getProjectInfo(i);
+        aElem.setAttribute("href", "#");
+        
+        /* Set the onclick function */
+        onClickStr = "alert('Projektin valintaa ei vielä toteutettu');";
+        aElem.setAttribute("onclick", onClickStr);
+        
+        liElem.appendChild(aElem);
+    }
 }
 
 
-function createDocumentMenuItems() {
-    var docCount = docInfo.getNbrOfDocuments();
+function initDocumentMenu() {
+
+    var docCount;
     var ulElem;
     var liElem;
-    var spanElem;
-    var menuTitle;
-    var prefix = "closeDocumentMenu(); initImage('";
-    var postfix = "');";
+    var aElem;
+    var prefix;
+    var postfix;
     var onClickStr;
     
-    /* Create the <ul> element */
-    ulElem = document.createElement("ul");
-    ulElem.id = "documentMenu";
-    ulElem.style.zIndex = "9999";
-    menuTitle = document.getElementById("menuLi1");
-    menuTitle.appendChild(ulElem);
+    docCount = docDb.getNbrOfDocuments();
+    ulElem = document.getElementById("navbarDocList");
     
-    /* Create items (<li> element with <span> element inside) for the document menu */
+    /* Create items (<li> element with <a> element inside) */
     for (i = 0; i < docCount; i++) {
         liElem = document.createElement("li");
         ulElem.appendChild(liElem);
         
-        spanElem = document.createElement("span");
-        spanElem.innerHTML = docInfo.getDocumentInfo(i).documentName;
+        aElem = document.createElement("a");
+        aElem.innerHTML = docDb.getDocumentInfo(i).documentName;
+        aElem.setAttribute("href", "#");
         
-        onClickStr = prefix + docInfo.getDocumentInfo(i).documentUrl + postfix;
-        spanElem.setAttribute("onClick", onClickStr);
-        liElem.appendChild(spanElem);
+        /* Set the onclick function and a parameter for it */
+        prefix = "initImage('";
+        postfix = "');";
+        onClickStr = prefix + docDb.getDocumentInfo(i).documentUrl + postfix;  
+        aElem.setAttribute("onclick", onClickStr);
+        
+        liElem.appendChild(aElem);
     }
 }
 
 
-function closeDocumentMenu() {
-    document.getElementById("documentMenu").style.zIndex = "-9999";
-}
+function initContextMenu() {
+  
+    var $contextMenu = $("#contextMenu");
 
-
-function createToolsMenuItems() {
-    var ulElem;
-    var liElem;
-    var spanElem;
-    var onClickStr = "closeToolsMenu(); alert('Ei vielä toteutettu');"
-    var menuOptions = [
-        "Valitse projekti",
-        "Tehtävälista",
-        "Haku",
-        "Tietojen lähetys",
-        "Asetukset"
-    ];
-    
-    /* Create the <ul> element */
-    ulElem = document.createElement("ul");
-    ulElem.id = "toolsMenu";
-    ulElem.style.zIndex = "9999";
-    menuTitle = document.getElementById("menuLi2");
-    menuTitle.appendChild(ulElem);
-    
-    /* Create items (<li> element with <span> element inside) for the tools menu */
-    for (i = 0; i < menuOptions.length; i++) {
-        liElem = document.createElement("li");
-        ulElem.appendChild(liElem);
-        spanElem = document.createElement("span");
-        spanElem.innerHTML = menuOptions[i];
-        spanElem.setAttribute("onClick", onClickStr);
-        liElem.appendChild(spanElem);
-    }
-}
-
-function closeToolsMenu() {
-    document.getElementById("toolsMenu").style.zIndex = "-9999";
-}
-
-
-$(document).ready(function() {
-    $("#mainViewImage").bind('click', openSubMenu);
-
-	$('.mainMenu > li').bind('mouseover', openSubMenu);
-	$('.mainMenu > li').bind('click', openSubMenu);
-	$('.mainMenu > li').bind('mouseout', closeSubMenu);
-	
-	function openSubMenu() {
-	    document.getElementById("documentMenu").style.display = 'initial';
-	    document.getElementById("toolsMenu").style.display = 'initial';
-		$(this).find('ul').css('visibility', 'visible');
-	}
-
-	function closeSubMenu() {
-	    document.getElementById("documentMenu").style.zIndex = "9999";
-	    document.getElementById("toolsMenu").style.zIndex = "9999";
-		$(this).find('ul').css('visibility', 'hidden');	
-	}   
-});
-
-
-/* mainView context menu */
-$(document).ready(function() {
-    $('#mainViewImage').click(function(e)  {
-
-        var clickX;   /* X-coordinate of the clicked point */
-        var clickY;   /* Y-coordinate of the clicked point */
-        var menuTop;  /* X-coordinate of the menu top left corner */
-        var menuLeft; /* Y-coordinate of the menu top left corner */
-        
-        /* Do not accept clicks if a modal dialog is on display */    
-        if (uiState.isModalOn() == true) {
-            return;
-        }
-        
-        /* In case the click indicator is left on display, remove it */
-        hideClickIndicator();
-    
-        /* Context menu is not displayed if POIs are not allowed in the document */
-        if (uiState.arePoisAccepted() != true) {
-            return;        
-        } 
-        
+    /* Show context menu when a floor plan is clicked */
+    $("#floorPlanImg").on("click", function(e) {    
+        var menuLeft;
+        var menuTop;
+                
         /*  Check the size of the window (visible area) and the menu */
         var windowWidth = document.body.clientWidth;
         var windowHeight = document.body.clientHeight;
-        var menuWidth = $("#floorPlanContextMenu").width();
-        var menuHeight = $("#floorPlanContextMenu").height();
-
-        clickX = e.pageX;
-        clickY = e.pageY;
+        var menuWidth = $("#contextMenu").width();
+        var menuHeight = $("#contextMenu").height();
         
-        uiState.setClickedX(clickX);
-        uiState.setClickedY(clickY);
-        
-        /* Put an indicator on display to show the clicked point */
-        showClickIndicator();
+        /* Pois can not be created in view-only documents */
+        if (uiState.arePoisAccepted() == false) {
+            return;
+        } 
         
         /* Calculate where the context menu can be put. Take into account
            the space the click indicator needs. */
-        if ((clickX + menuWidth + CLICK_ICON_SPACE) > (windowWidth)) {
+        if ((e.pageX + menuWidth + CLICK_ICON_SPACE) > (windowWidth)) {
             /* Put the menu left to the clicked point */
-            menuLeft = clickX - menuWidth - CLICK_ICON_SPACE;
+            menuLeft = e.pageX - menuWidth - CLICK_ICON_SPACE;
         } else {
-            menuLeft = clickX + CLICK_ICON_SPACE;            
+            menuLeft = e.pageX + CLICK_ICON_SPACE;            
         }
                 
-        if ((clickY + menuHeight + CLICK_ICON_SPACE) > (windowHeight)) {
+        if ((e.pageY + menuHeight + CLICK_ICON_SPACE) > (windowHeight)) {
             /* Put the menu up to the clicked point */
-            menuTop = clickY - menuHeight - CLICK_ICON_SPACE;
+            menuTop = e.pageY - menuHeight - CLICK_ICON_SPACE;
         } else {
-            menuTop = clickY + CLICK_ICON_SPACE;
+            menuTop = e.pageY + CLICK_ICON_SPACE;
         }
+    
+        $contextMenu.css({
+            display: "block",
+            left: menuLeft,
+            top: menuTop
+        });
         
-        $("#floorPlanContextMenu").css({top: menuTop, left: menuLeft, position:'absolute'});
-        $("#floorPlanContextMenu").show();
+        uiState.setClickedX(e.pageX);
+        uiState.setClickedY(e.pageY);        
+        
+        showClickIndicator();
+        
+        return false;
     });
-    
-    $("#floorPlanContextMenu").bind('mouseleave', closeContextMenu);
-    
-    function closeContextMenu () {
-        hideClickIndicator();
-        $("#floorPlanContextMenu").hide();
-    }
-});
-   
 
-$(document).ready(function() {
-    $('span').click(function(e)  {
-        $("#floorPlanContextMenu").hide();
+    $contextMenu.on("click", "a", function() {
+        $contextMenu.hide();
     });
-});
+  
+}
+
+
+/* Main menu selections */
+
+function hideContextMenu() {
+
+    /* Hide both the click indicator the and context menu */
+    hideClickIndicator();
+    $("#contextMenu").hide();
+}
+
+
+function selectProject() {
+
+    hideContextMenu();
+	$(".poiClass").remove() ; 
+	db.deleteAllPOIs();
+    alert("POI muisti tyhjennetty");
+}
+
+
+function taskList() {
+
+    hideContextMenu();
+    alert("Ei vielä toteutettu");
+}
+
+
+function uploadData() {
+
+    hideContextMenu();
+    alert("Ei vielä toteutettu");
+}
+
+
+function settings() {
+
+    hideContextMenu();
+    alert("Ei vielä toteutettu");
+}
